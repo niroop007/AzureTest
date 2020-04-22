@@ -17,10 +17,9 @@
 	<h1>AI Based Covid Detection System</h1>
 
      <!-- Main Input For Receiving Query to our ML -->
-    <form action="{{ url_for('predict')}}"method="post">
-      <input type="text" name="interview_score3" placeholder="Maximum Wind Speed" required="required" /><br>
-    	<input type="text" name="image_file" placeholder="Upload X-Ray Image File" required="required" /><br>
-        
+    <form action="{{ url_for('predict')}}"method="post" enctype="multipart/form-data">
+      <input type="file" name="image_file" id="image_file" placeholder="X-ray Image File" required="required" /><br>
+    	
 
        
 
