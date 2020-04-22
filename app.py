@@ -1,39 +1,43 @@
 import numpy as np
-from flask import Flask, request, jsonify, render_template, url_for
-import pickle
-
+from flask import Flask, request, redirect, render_template
+from tensorflow import keras
+from keras.preprocessing import image
 
 app = Flask(__name__)
-model = pickle.load(open('randomForestRegressor.pkl','rb'))
+model = keras.models.load_model('Covid_Vgg.h5')
 
 
 @app.route('/')
 def home():
-    #return 'Hello World'
+    
     return render_template('home.html')
-    #return render_template('index.html')
+    
 
-@app.route('/predict',methods = ['POST'])
+@app.route('/predict',methods = ['GET','POST'])
 def predict():
-    int_features = [float(x) for x in request.form.values()]
-    final_features = [np.array(int_features)]
-    prediction = model.predict(final_features)
-    print(prediction[0])
-
-    #output = round(prediction[0], 2)
-    return render_template('home.html', prediction_text="AQI for Jaipur {}".format(prediction[0]))
-
-@app.route('/predict_api',methods=['POST'])
-def predict_api():
-    '''
-    For direct API calls trought request
-    '''
-    data = request.get_json(force=True)
-    prediction = model.predict([np.array(list(data.values()))])
-
-    output = prediction[0]
-    return jsonify(output)
-
+    if request.method == "POST":
+        if request.files:
+            
+            
+            int_features = request.files["image_file"]
+            print(int_features)
+            process_features=image.load_img(int_features, target_size=(150, 150))
+            final_features = np.expand_dims(process_features, axis=0)
+            output = model.predict_classes(final_features)
+            print(output)
+            for x in output:
+                if x==0:
+                    prediction="Patient has Covid +ve"
+                    print(prediction)
+                else:
+                    prediction="No Covid Symptoms Detected"
+                    print(prediction)
+            
+            return redirect(request.url)
+    
+    
+    return render_template('home.html', prediction_text="Result is {}".format(prediction))
+    
 
 
 if __name__ == '__main__':
