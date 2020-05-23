@@ -5,8 +5,22 @@ from keras.preprocessing import image
 
 app = Flask(__name__)
 model = keras.models.load_model('Covid_Vgg.h5')
+def get_model():
+    global model
+    model=load_model("Covid_Vgg.h5")
+    print("model loaded")
+    
+def preprocess_image(image,target_size):
+    if image.mode !="RGB":
+        image=image.convert("RGB")
+    image=image.resize(target_size)
+    image=img_to_array(image)
+    image=np.expand_dims(image,axis=0)
+    
+    return image
 
-
+print("loading model")
+get_model()
 @app.route('/')
 def home():
     
@@ -15,29 +29,32 @@ def home():
 
 @app.route('/predict',methods = ['GET','POST'])
 def predict():
-    if request.method == "POST":
-        if request.files:
-            
-            
-            int_features = request.files["image_file"]
-            print(int_features)
-            process_features=image.load_img(int_features, target_size=(150, 150))
-            final_features = np.expand_dims(process_features, axis=0)
-            output = model.predict_classes(final_features)
-            print(output)
-            for x in output:
-                if x==0:
-                    prediction="Patient has Covid +ve"
-                    print(prediction)
-                else:
-                    prediction="No Covid Symptoms Detected"
-                    print(prediction)
-            
-            return redirect(request.url)
+    message=request.get_json(force=True)
+    encoded=str(message['image'])
+    #print(encoded)
+    encoded_pure=encoded.split(',')
+
+    decoded=base64.b64decode(str(encoded_pure[1]))
+
+    image=Image.open(io.BytesIO(decoded))
+    processed_image=preprocess_image(image,target_size=(150,150))
     
+    prediction=model.predict(processed_image).tolist()
+    print(prediction)
+    if prediction[0][0]<=0.5:
+        covid_score=(1-prediction[0][0])*100
+        normal_score=(prediction[0][0])*100
+    else:
+        covid_score=(1-prediction[0][0])*100
+        normal_score=(prediction[0][0])*100
     
-    return render_template('home.html', prediction_text="Result is {}".format(prediction))
-    
+    response={
+            "prediction":{
+                    "covid":covid_score, 
+                    "normal":normal_score
+                    }
+            }
+    return str(covid_score)
 
 
 if __name__ == '__main__':
