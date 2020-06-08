@@ -28,7 +28,7 @@ def predict():
         file=request.files['file']
         filename=secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
-        getPrediction(filename)
+        #getPrediction(filename)
         print("Entered Prediction Logic")
         print("Loading model...")
         model = keras.models.load_model('Covid_Vgg.h5')
