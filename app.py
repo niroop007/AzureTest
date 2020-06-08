@@ -46,7 +46,7 @@ def predict():
             else:
                 result = "No Covid Symptoms Detected"
         flash(result)
-        return redirect('/')
+        return result
     
 
 if __name__ == '__main__':
