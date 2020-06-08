@@ -15,7 +15,13 @@
 <body>
  <div class="login">
 	<h1>AI Based Covid Detection System</h1>
- 
+ <p>
+	{% with messages = get_flashed_messages() %}
+		{% if messages %}
+        		Result: {{ messages[0] }}
+        	{% endif %}
+	{% endwith %}
+ </p>
      <!-- Main Input For Receiving Query to our ML -->
     <form action="{{ url_for('predict')}}"method="post" enctype="multipart/form-data">
       <input type="file" name="file" id="file" placeholder="X-ray Image File" required="required" /><br>
@@ -25,19 +31,13 @@
 
         <button type="submit" class="btn btn-primary btn-block btn-large">Predict</button>
     </form>
-<p>
-	{% with messages = get_flashed_messages() %}
-		{% if messages %}
-        		Prediction Result: {{ messages[0] }}
-        	{% endif %}
-	{% endwith %}
- </p>
+
    <br>
    <br>
   
    
  </div>
- {{result}}
+ {{prediction_text}}
 
 </body>
 </html>
