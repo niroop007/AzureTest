@@ -1,26 +1,20 @@
 import numpy as np
-from flask import Flask, request, redirect, render_template
 from tensorflow import keras
 from keras.preprocessing import image
+from werkzeug.utils import secure_filename
+from keras.preprocessing.image import load_img
+from flask import Flask, render_template, request, redirect, flash, url_for
+from keras.applications.vgg16 import preprocess_input
+from werkzeug.utils import secure_filename
+import os
 
+
+UPLOAD_FOLDER = '.\uploads'
 app = Flask(__name__)
 model = keras.models.load_model('Covid_Vgg.h5')
-def get_model():
-    global model
-    model=load_model("Covid_Vgg.h5")
-    print("model loaded")
-    
-def preprocess_image(image,target_size):
-    if image.mode !="RGB":
-        image=image.convert("RGB")
-    image=image.resize(target_size)
-    image=img_to_array(image)
-    image=np.expand_dims(image,axis=0)
-    
-    return image
+app.secret_key = "secret key"
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-print("loading model")
-get_model()
 @app.route('/')
 def home():
     
@@ -29,33 +23,30 @@ def home():
 
 @app.route('/predict',methods = ['GET','POST'])
 def predict():
-    message=request.get_json(force=True)
-    encoded=str(message['image'])
-    #print(encoded)
-    encoded_pure=encoded.split(',')
-
-    decoded=base64.b64decode(str(encoded_pure[1]))
-
-    image=Image.open(io.BytesIO(decoded))
-    processed_image=preprocess_image(image,target_size=(150,150))
     
-    prediction=model.predict(processed_image).tolist()
-    print(prediction)
-    if prediction[0][0]<=0.5:
-        covid_score=(1-prediction[0][0])*100
-        normal_score=(prediction[0][0])*100
-    else:
-        covid_score=(1-prediction[0][0])*100
-        normal_score=(prediction[0][0])*100
+    if request.method == 'POST':
+        file=request.files['file']
+        filename=secure_filename(file.filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
+        getPrediction(filename)
+        print("Entered Prediction Logic")
+        print("Loading model...")
+        model = keras.models.load_model('Covid_Vgg.h5')
+        print("Model loaded successfully")
+        image = load_img('uploads/'+filename, target_size=(150, 150))
+        print("Image is converted to 150*150")
+        im_final = np.expand_dims(image, axis=0)
+        print("Expanded dimension...")
+        print("Started Prediction...")
+        prediction = model.predict_classes(im_final)
+        #print(prediction)
+        for x in prediction:
+            if x==0:
+                result = "Patient has Covid +ve"
+            else:
+                result = "No Covid Symptoms Detected"
+        return render_template('result.html',result=result)
     
-    response={
-            "prediction":{
-                    "covid":covid_score, 
-                    "normal":normal_score
-                    }
-            }
-    return str(covid_score)
-
 
 if __name__ == '__main__':
     app.run(debug=True)
