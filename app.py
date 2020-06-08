@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 import os
 
 
-UPLOAD_FOLDER = '.\uploads'
+UPLOAD_FOLDER = 'uploads'
 app = Flask(__name__)
 model = keras.models.load_model('Covid_Vgg.h5')
 app.secret_key = "secret key"
