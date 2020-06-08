@@ -21,7 +21,7 @@ def home():
     return render_template('home.html')
     
 
-@app.route('/', methods = ['POST'])
+@app.route('/predict', methods = ['GET', 'POST'])
 def predict():
     
     if request.method == 'POST':
