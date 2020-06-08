@@ -21,7 +21,7 @@ def home():
     return render_template('home.html')
     
 
-@app.route('/predict',methods = ['GET','POST'])
+@app.route('/', methods = ['POST'])
 def predict():
     
     if request.method == 'POST':
@@ -45,7 +45,8 @@ def predict():
                 result = "Patient has Covid +ve"
             else:
                 result = "No Covid Symptoms Detected"
-        return render_template('result.html',result=result)
+        flash(result)
+        return redirect('/')
     
 
 if __name__ == '__main__':
