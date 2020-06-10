@@ -9,12 +9,12 @@ from werkzeug.utils import secure_filename
 import os
 
 
-UPLOAD_FOLDER = 'uploads'
+#UPLOAD_FOLDER = 'uploads'
 app = Flask(__name__)
 
 model = keras.models.load_model('Covid_Vgg.h5')
-app.secret_key = "secret key"
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+#app.secret_key = "secret key"
+#app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/')
 def home():
@@ -31,14 +31,14 @@ def predict():
 
     if request.method == 'POST':
         file=request.files['file']
-        filename=secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
+        #filename=secure_filename(file.filename)
+        #file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
         #getPrediction(filename)
         print("Entered Prediction Logic")
         print("Loading model...")
         model = keras.models.load_model('Covid_Vgg.h5')
         print("Model loaded successfully")
-        image = load_img(os.path.join(app.config['UPLOAD_FOLDER'],filename), target_size=(150, 150))
+        image = load_img(file, target_size=(150, 150))
         print("Image is converted to 150*150")
         im_final = np.expand_dims(image, axis=0)
         print("Expanded dimension...")
